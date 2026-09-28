@@ -22,6 +22,8 @@ defmodule Poll do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  def stop(), do: GenServer.stop(Poll)
+
   def enable(), do: GenServer.cast(__MODULE__, :enable)
 
   def disable(), do: GenServer.cast(__MODULE__, :disable)
