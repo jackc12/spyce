@@ -13,6 +13,7 @@ defmodule Poll do
   Poll.status()
   """
 
+  # should actually mock this for testing
   @interval :timer.seconds(1)
 
   # --- Client API ---
@@ -25,7 +26,7 @@ defmodule Poll do
 
   def disable(), do: GenServer.cast(__MODULE__, :disable)
 
-  def status(), do: GenServer.call(__MODULE__, :status)
+  def get_state(), do: GenServer.call(__MODULE__, :get_state)
 
   # --- Server Callbacks ---
 
@@ -40,7 +41,7 @@ defmodule Poll do
   end
 
   @impl true
-  def handle_call(:status, _from, state), do: {:reply, state, state}
+  def handle_call(:get_state, _from, state), do: {:reply, state, state}
 
   @impl true
   def handle_cast(:enable, state), do: {:noreply, %{state | enabled?: true}}
@@ -63,6 +64,8 @@ defmodule Poll do
   # --- Helpers ---
 
   defp schedule_poll(delay) do
+    # because I didn't want to mock time
+    send_test(:tick)
     Process.send_after(__MODULE__, :poll, delay)
   end
 
@@ -102,4 +105,6 @@ defmodule Poll do
     IO.puts("upserted order=#{inspect(order)}")
     :ok
   end
+
+  def send_test(message), do: if(Process.whereis(:test), do: send(:test, message))
 end
