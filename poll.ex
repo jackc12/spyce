@@ -1,6 +1,18 @@
 defmodule Poll do
   use GenServer
 
+  @moduledoc """
+  start by running 
+  Poll.start_link()
+
+  should see orders being upserted into db
+  enable/disable using
+  Poll.enable()
+
+  check status using
+  Poll.status()
+  """
+
   @interval :timer.seconds(1)
 
   # --- Client API ---
@@ -13,23 +25,31 @@ defmodule Poll do
 
   def disable(), do: GenServer.cast(__MODULE__, :disable)
 
+  def status(), do: GenServer.call(__MODULE__, :status)
+
   # --- Server Callbacks ---
 
   @impl true
   def init(_opts) do
     # Poll immediately on startup; change to @interval to delay the first run
     schedule_poll(0)
-    {:ok, %{poll?: true}}
+    # ran_at with list of DateTime.utc_now is probably more useful than just integer 
+    # could also just get this from the updated_at field in the db
+    # just wanted a way to show the polls are actually happening in the state
+    {:ok, %{enabled?: true, frequency: 0}}
   end
 
   @impl true
-  def handle_cast(:enable, state), do: %{state | poll?: true}
+  def handle_call(:status, _from, state), do: {:reply, state, state}
+
   @impl true
-  def handle_cast(:disable, state), do: %{state | poll?: true}
+  def handle_cast(:enable, state), do: {:noreply, %{state | enabled?: true}}
+  @impl true
+  def handle_cast(:disable, state), do: {:noreply, %{state | enabled?: false}}
 
   @impl true
   def handle_info(:poll, state) do
-    if state.poll?, do: perform_poll()
+    state = if state.enabled?, do: perform_poll(state), else: state
     schedule_poll(@interval)
     {:noreply, state}
   end
@@ -46,10 +66,14 @@ defmodule Poll do
     Process.send_after(__MODULE__, :poll, delay)
   end
 
-  defp perform_poll() do
+  defp perform_poll(%{enabled?: true} = state) do
     do_perform_poll()
     |> Enum.each(&write/1)
+
+    %{state | frequency: state.frequency + 1}
   end
+
+  defp perform_poll(state), do: state
 
   defp do_perform_poll(),
     do: [
@@ -66,17 +90,16 @@ defmodule Poll do
     # so just went with try
 
     do_write(order)
-    rescue error -> IO.puts("Oh no there was an error! error=#{inspect(error)}")
-    :ok
-
-
-
+  rescue
+    error ->
+      IO.puts("Oh no there was an error! error=#{inspect(error)}")
+      :ok
   end
 
   defp do_write(order) do
     # omitting context functions for brevity
     # upsert_order(order)
-    if Process.whereis(:test), do: send(:test, {:order_upsert, order})
+    IO.puts("upserted order=#{inspect(order)}")
     :ok
   end
 end
