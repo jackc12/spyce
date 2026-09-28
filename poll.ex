@@ -22,8 +22,6 @@ defmodule Poll do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def stop(), do: GenServer.stop(Poll)
-
   def enable(), do: GenServer.cast(__MODULE__, :enable)
 
   def disable(), do: GenServer.cast(__MODULE__, :disable)
@@ -72,6 +70,8 @@ defmodule Poll do
   end
 
   defp perform_poll(%{enabled?: true} = state) do
+    send_test(:poll)
+
     do_perform_poll()
     |> Enum.each(&write/1)
 

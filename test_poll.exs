@@ -27,8 +27,20 @@ defmodule PollTest do
     end
   end
 
-  describe "get_state" do
-    setup do
+  describe "disable" do
+    test "sets enabled?=false" do
+      assert Poll.get_state().enabled? === true
+      Poll.disable()
+      assert Poll.get_state.enabled? === false
+    end
+    test "stops polling" do
+      assert_received :tick
+
+      # because time isn't mocked
+      assert_receive :poll, 2000
+      Poll.disable()
+      assert_receive :tick, 2000
+      refute_receive :poll, 2000
     end
   end
 end
