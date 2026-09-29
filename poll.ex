@@ -13,7 +13,6 @@ defmodule Poll do
   Poll.status()
   """
 
-  # should actually mock this for testing
   @interval :timer.seconds(1)
 
   # --- Client API ---
@@ -64,14 +63,10 @@ defmodule Poll do
   # --- Helpers ---
 
   defp schedule_poll(delay) do
-    # because I didn't want to mock time
-    send_test(:tick)
     Process.send_after(__MODULE__, :poll, delay)
   end
 
   defp perform_poll(%{enabled?: true} = state) do
-    send_test(:poll)
-
     do_perform_poll()
     |> Enum.each(&write/1)
 
@@ -107,6 +102,4 @@ defmodule Poll do
     IO.puts("upserted order=#{inspect(order)}")
     :ok
   end
-
-  def send_test(message), do: if(Process.whereis(:test), do: send(:test, message))
 end
