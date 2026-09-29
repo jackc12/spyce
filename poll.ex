@@ -2,6 +2,14 @@ defmodule Poll do
   use GenServer
 
   @moduledoc """
+  Wrote this with almost no LLMs. just used gemini as basically a documentation searcher
+
+  initially started writing tests but then abandoned because I didn't want to mock time.
+  just registered a test pid and was sending messages to it to assert perform_poll/1 or write/1 were happening
+  ran into issues with timer.seconds and trying to make tests not sleep which would've been gross
+  ultimitely didn't think this warranted a mix project and didn't want to mock time
+  can see in commits fdbb0489059cda3cd742f9e387e65b91097e7c52..570697e4d982f9f035ddf86df12145e517986f2c 
+
   start by running 
   Poll.start_link()
 
