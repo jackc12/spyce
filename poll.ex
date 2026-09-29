@@ -2,7 +2,7 @@ defmodule Poll do
   use GenServer
 
   @moduledoc """
-  Wrote this with almost no LLMs. just used gemini as basically a documentation searcher
+  wrote this with almost no LLMs. just used gemini as basically a documentation searcher
 
   initially started writing tests but then abandoned because I didn't want to mock time.
   just registered a test pid and was sending messages to it to assert perform_poll/1 or write/1 were happening
